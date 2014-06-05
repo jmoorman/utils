@@ -97,9 +97,8 @@ set wildmenu
 :nmap <F7> 100|F s<cr><esc>
 :nmap <S-F7> 100|F s<cr><tab><esc>
 
+" Toggle line numbers
 :nmap <C-N> :set invnumber<CR>
-" ABBREVIATIONS
-:ab cmain <cr>int<cr>main(int argc, char *argv[])<cr>{<cr>return 0;<cr><bs>}<cr><esc>kkO
 
 " Shortcut to execute the file being edited.
 :nmap <C-X> :!./%<CR>
