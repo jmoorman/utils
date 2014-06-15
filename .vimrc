@@ -1,21 +1,23 @@
 " GENERAL OPTIONS
 behave xterm
-set viminfo='20,\"500,%	" ' Maximum number of previously edited files for which
-                        "   the marks are remembered.  
-			" " Maximum number of lines saved for each register.
-			" % When included, save and restore the buffer list.
-                        "   If Vim is started with a file name argument, the
-                        "   buffer list is not restored.  If Vim is started
-                        "   without a file name argument, the buffer list is
-                        "   restored from the viminfo file.  Buffers without a
-                        "   file name and buffers for help files are not written
-			"   to the viminfo file.
-set history=500		" keep {number} lines of command line history
+set viminfo='20,\"500,%
+    " ' Maximum number of previously edited files for which
+    "   the marks are remembered.
+    " " Maximum number of lines saved for each register.
+    " % When included, save and restore the buffer list.
+    "   If Vim is started with a file name argument, the
+    "   buffer list is not restored.  If Vim is started
+    "   without a file name argument, the buffer list is
+    "   restored from the viminfo file.  Buffers without a
+    "   file name and buffers for help files are not written
+    "   to the viminfo file.
+
+set history=500        " keep {number} lines of command line history
 
 " TAB HANDLING, C program formatting:
-set tabstop=4		" ts, number of spaces that a tab *in an input file* is
+set tabstop=4        " ts, number of spaces that a tab *in an input file* is
                         "   equivalent to.
-set shiftwidth=4	" sw, number of spaces shifted left and right when
+set shiftwidth=4    " sw, number of spaces shifted left and right when
                         "   issuing << and >> commands
 set smarttab            " a <Tab> in an indent inserts 'shiftwidth' spaces
 set softtabstop=4       " number of spaces that a tab *pressed by the user*
@@ -24,16 +26,18 @@ set shiftround          " round to 'shiftwidth' for "<<" and ">>"
 set expandtab           " don't input tabs; replace with spaces. <local to
                         "   buffer>
 set numberwidth=1       " distance between line number and start of line
-highlight LineNr term=bold cterm=NONE ctermfg=Magenta
-   \ ctermbg=NONE gui=NONE guifg=DarkGrey guibg=NONE
 
 filetype on
 
 " Remove trailing whitespace when saving a file "
-autocmd FileType c,cpp,java,php autocmd BufWritePre <buffer> :%s/\s\+$//e
+fun RemoveTrailingWhitespace()
+    %s/\s\+$//e
+endfun
 
-autocmd FileType * set formatoptions=tcql
-    \ nocindent comments&
+autocmd FileType c,cpp,java autocmd BufWritePre <buffer> :call RemoveTrailingWhitespace()
+
+autocmd FileType * set formatoptions=tcql nocindent comments&
+
 " Formatoptions: 'q' allows formatting with "gq".  'r' automates the middle of
 "    a comment.  'o' automates comment formatting with the 'o' or 'O'
 "    commands.  'c' wrap comments.  'l' do not break lines in insert mode.
@@ -53,21 +57,42 @@ set cinkeys=0{,0},0),:,0#,!^F,o,O,e
 
 set wrap                " whether to wrap lines
 " Make breaks more obvious
-set showbreak=+++\ \  
-" set number		" number lines
+set showbreak=+++\ \
+" set number        " number lines
 set nocompatible
 set incsearch
 set showmatch
 set backspace=1
 
-syntax on               " colorize
+" Enable syntax highlighting with custom colors
+syntax on
+highlight LineNr term=bold cterm=NONE ctermfg=Magenta ctermbg=NONE
+highlight comment ctermfg=darkgrey
+
+" Highlight long lines
+let s:hilightll = 1
+highlight LongLine ctermbg=darkred ctermfg=lightgrey
+highlight link LongLineLink LongLine
+match LongLineLink /\%>100v.\+$/
+
+fun ToggleLongLineHi()
+  if s:hilightll
+    hi link LongLineLink NONE
+    let s:hilightll = 0
+  else
+    hi link LongLineLink LongLine
+    let s:hilightll = 1
+  endif
+endfun
+
+map <C-M> :call ToggleLongLineHi()<CR>
 
 " VIM DISPLAY OPTIONS
-set showmode		" show which mode (insert, replace, visual)
+set showmode        " show which mode (insert, replace, visual)
 set ruler
 set title
-set showcmd		" show commands in status line when typing
-set wildmenu	
+set showcmd        " show commands in status line when typing
+set wildmenu
 
 " KEY MAPPINGS
 "   depending on your terminal software, you may have to fiddle with a few
@@ -87,9 +112,9 @@ set wildmenu
 "  Note: this detabbing should work for tabs at the beginning of the line, but
 "      will probably be somewhat wrong for tabs later in the line, but
 "      wherever they used to be, they'll now be gone.
-:map <F6> mzA	<esc>:set fileformat=unix<cr>:set endofline<cr>:%s/	/    /g<cr>:%s/ *$//<cr>:nohlsearch<cr>i<esc>`z
+:map <F6> mzA	<esc>:set fileformat=unix<cr>:set endofline<cr>:%s/	/    /g<cr>:%s/ *$//<cr>:nohlsearch<cr>i<esc>`z
 
-:imap <F6> <esc>mzA	<esc>:set fileformat=unix<cr>:set endofline<cr>:%s/	/    /g<cr>:%s/ *$//<cr>:nohlsearch<cr>i<esc>`za
+:imap <F6> <esc>mzA	<esc>:set fileformat=unix<cr>:set endofline<cr>:%s/	/    /g<cr>:%s/ *$//<cr>:nohlsearch<cr>i<esc>`za
 
 "  Useful for limiting lines to 100 columns.  Goes to column 100, then back to a
 "      previous space, then changes that space to a newline.  "autoindent" from
@@ -102,3 +127,7 @@ set wildmenu
 
 " Shortcut to execute the file being edited.
 :nmap <C-X> :!./%<CR>
+
+" insert hard tab using shift-tab for use in things like Makefiles
+:imap <silent> <S-TAB> <C-o>:set noexpandtab<cr><tab><C-o>:set expandtab<cr>
+:nmap <silent> <S-TAB> :set noexpandtab<cr>i<tab><esc><right>:set expandtab<cr>
